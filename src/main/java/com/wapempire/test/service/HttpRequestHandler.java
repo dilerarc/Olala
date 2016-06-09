@@ -12,8 +12,7 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<HttpRequest>
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, HttpRequest msg) throws Exception {
-        System.out.println("channelRead0");
-        System.out.println(msg.toString());
+        //System.out.println("channelRead0");
         DefaultFullHttpResponse response = new DefaultFullHttpResponse(
                 HttpVersion.HTTP_1_1,
                 HttpResponseStatus.OK,
@@ -23,7 +22,7 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<HttpRequest>
 
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
-        System.out.println("channelReadComplete");
+        //System.out.println("channelReadComplete");
         ctx.close();
     }
 }

@@ -4,10 +4,13 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.epoll.EpollEventLoopGroup;
+import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpServerCodec;
+
+import static io.netty.channel.ChannelOption.SO_KEEPALIVE;
+import static io.netty.channel.ChannelOption.TCP_NODELAY;
 
 public class HttpServer {
 
@@ -18,12 +21,12 @@ public class HttpServer {
     }
 
     public void run() throws Exception {
-        EventLoopGroup bossGroup = new NioEventLoopGroup(2);
-        EventLoopGroup workerGroup = new NioEventLoopGroup(4);
+        EventLoopGroup bossGroup = new EpollEventLoopGroup(2);
+        EventLoopGroup workerGroup = new EpollEventLoopGroup(4);
         try {
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)
-                    .channel(NioServerSocketChannel.class)
+                    .channel(EpollServerSocketChannel.class)
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         public void initChannel(SocketChannel ch) throws Exception {
@@ -31,7 +34,10 @@ public class HttpServer {
                                     .addLast(new HttpServerCodec())
                                     .addLast(new HttpRequestHandler());
                         }
-                    });
+                    })
+                    //.option(SO_REUSEADDR, true)
+                    .childOption(SO_KEEPALIVE, false)
+                    .childOption(TCP_NODELAY, true);
 
             ChannelFuture f = b.bind(port).sync();
             f.channel().closeFuture().sync();
